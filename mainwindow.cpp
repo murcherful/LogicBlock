@@ -192,3 +192,38 @@ void MainWindow::on_radioButtonCrossNotConnected_toggled(bool checked)
         ui->graphicsView->setBlockType(BasicBlock::CROSS_NOT_CONNECT);
     }
 }
+
+void MainWindow::on_radioButtonSwitch_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::SWITCH_BLOCK);
+    }
+}
+
+void MainWindow::on_radioButtonAndGate_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::AND_GATE_BLOCK);
+    }
+}
+
+void MainWindow::on_radioButtonOrGate_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::OR_GATE_BLOCK);
+    }
+}
+
+void MainWindow::on_radioButtonNotGate_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::NOT_GATE_BLOCK);
+    }
+}
+
+void MainWindow::on_radioButtonXorGate_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::XOR_GATE_BLOCK);
+    }
+}

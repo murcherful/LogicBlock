@@ -62,6 +62,7 @@ private:
     BasicBlock* getBlock(int x, int y);
     void combineBlock(BasicBlock* bb);
     void deleteBlock(IndexPair index);
+    void interactiveBlock(IndexPair index);
 
     int transToGrid(int x);
     int transToIndex(int x);

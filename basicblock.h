@@ -5,6 +5,7 @@
 #include <QObject>
 #include "common.h"
 #include <unordered_set>
+#include <QDebug>
 
 typedef std::unordered_set<IndexPair, pair_hash> MyHashSet;
 
@@ -53,6 +54,11 @@ public:
     static int LIGHT;
     static int CROSS_CONNECT;
     static int CROSS_NOT_CONNECT;
+    static int SWITCH_BLOCK;
+    static int AND_GATE_BLOCK;
+    static int OR_GATE_BLOCK;
+    static int NOT_GATE_BLOCK;
+    static int XOR_GATE_BLOCK;
 
 protected:
     void activeLeft();
@@ -178,6 +184,50 @@ public:
     void updateState() override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
     void interactive() override;
+    void reset() override;
+private:
+    int isOn;
+    void initArgs();
+};
+
+class AndGateBlock:public BasicBlock
+{
+public:
+    AndGateBlock();
+    AndGateBlock(int tx, int ty);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+};
+
+class OrGateBlock:public BasicBlock
+{
+public:
+    OrGateBlock();
+    OrGateBlock(int tx, int ty);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+};
+
+class NotGateBlock:public BasicBlock
+{
+public:
+    NotGateBlock();
+    NotGateBlock(int tx, int ty);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+};
+
+class XorGateBlock:public BasicBlock
+{
+public:
+    XorGateBlock();
+    XorGateBlock(int tx, int ty);
+
+   void updateState() override;
+   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 };
 
 #endif // BASICBLOCK_H

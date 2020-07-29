@@ -67,12 +67,15 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event){
         }
     }
     else if(event->button() == Qt::RightButton){
+        QPointF scenePoint = this->mapToScene(event->pos());
+        int indexX = transToIndex(scenePoint.x());
+        int indexY = transToIndex(scenePoint.y());
+        IndexPair index(indexX, indexY);
         if(isEdit){
-            QPointF scenePoint = this->mapToScene(event->pos());
-            int indexX = transToIndex(scenePoint.x());
-            int indexY = transToIndex(scenePoint.y());
-            IndexPair index(indexX, indexY);
             deleteBlock(index);
+        }
+        else{
+            interactiveBlock(index);
         }
     }
 }
@@ -160,6 +163,21 @@ BasicBlock* MyGraphicsView::getBlock(int x, int y){
     }
     else if(blockType == BasicBlock::CROSS_NOT_CONNECT){
         return new CrossNotConnectBlock(x, y);
+    }
+    else if(blockType == BasicBlock::SWITCH_BLOCK){
+        return new SwitchBlock(x, y);
+    }
+    else if(blockType == BasicBlock::AND_GATE_BLOCK){
+        return new AndGateBlock(x, y);
+    }
+    else if(blockType == BasicBlock::OR_GATE_BLOCK){
+        return new OrGateBlock(x, y);
+    }
+    else if(blockType == BasicBlock::NOT_GATE_BLOCK){
+        return new NotGateBlock(x, y);
+    }
+    else if(blockType == BasicBlock::XOR_GATE_BLOCK){
+        return new XorGateBlock(x, y);
     }
 }
 
@@ -265,6 +283,14 @@ void MyGraphicsView::deleteBlock(IndexPair index){
         blockMap.erase(it);
         scene()->removeItem(bb);
         delete bb;
+    }
+    scene()->update();
+}
+
+void MyGraphicsView::interactiveBlock(IndexPair index){
+    MyHashMap::iterator it = blockMap.find(index);
+    if(it != blockMap.end()){
+        it->second->interactive();
     }
     scene()->update();
 }

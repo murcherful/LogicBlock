@@ -67,6 +67,16 @@ private slots:
 
     void on_radioButtonCrossNotConnected_toggled(bool checked);
 
+    void on_radioButtonSwitch_toggled(bool checked);
+
+    void on_radioButtonAndGate_toggled(bool checked);
+
+    void on_radioButtonOrGate_toggled(bool checked);
+
+    void on_radioButtonNotGate_toggled(bool checked);
+
+    void on_radioButtonXorGate_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     MyScene *scene1;

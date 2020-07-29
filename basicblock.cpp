@@ -10,6 +10,11 @@ int BasicBlock::RIGHT_DOWN_LINE = 6;
 int BasicBlock::LIGHT = 7;
 int BasicBlock::CROSS_CONNECT = 8;
 int BasicBlock::CROSS_NOT_CONNECT = 9;
+int BasicBlock::SWITCH_BLOCK = 10;
+int BasicBlock::AND_GATE_BLOCK = 11;
+int BasicBlock::OR_GATE_BLOCK = 12;
+int BasicBlock::NOT_GATE_BLOCK = 13;
+int BasicBlock::XOR_GATE_BLOCK = 14;
 
 void BasicBlock::initArgs(){
     x = 0;
@@ -507,11 +512,207 @@ void CrossNotConnectBlock::initArgs(){
 }
 
 SwitchBlock::SwitchBlock():BasicBlock(){
-
+    initArgs();
 }
 
 SwitchBlock::SwitchBlock(int tx, int ty):BasicBlock(tx, ty){
+    initArgs();
+}
+
+void SwitchBlock::initArgs(){
+    isOn = 0;
+}
+
+void SwitchBlock::reset(){
+    BasicBlock::reset();
+    isOn = 0;
+}
+
+void SwitchBlock::updateState(){
+    if(isOn){
+        activeUp();
+        activeDown();
+        activeLeft();
+        activeRight();
+    }
+}
+
+void SwitchBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(isOn){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawEllipse(x, y, BLOCK_SIZE, BLOCK_SIZE);
+}
+
+void SwitchBlock::interactive(){
+    if(isOn){
+        isOn = 0;
+    }
+    else{
+        isOn = 1;
+    }
+}
+
+AndGateBlock::AndGateBlock():BasicBlock(){
 
 }
 
+AndGateBlock::AndGateBlock(int tx, int ty):BasicBlock(tx, ty){
 
+}
+
+void AndGateBlock::updateState(){
+    if(oldUpActive && oldDownActive){
+        activeState = 1;
+        activeRight();
+    }
+}
+
+void AndGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldActiveState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
+    painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
+    if(oldActiveState){
+        painter->setPen(QPen(QColor(0, 255, 255)));
+    }
+    else{
+        painter->setPen(QPen(QColor(255-139, 255, 255)));
+    }
+    QFont font;
+    font.setFamily("Microsoft YaHei");
+    font.setPointSize(BLOCK_SIZE/6);
+    font.setBold(true);
+    painter->setFont(font);
+    painter->drawText(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "AND");
+}
+
+OrGateBlock::OrGateBlock():BasicBlock(){
+
+}
+
+OrGateBlock::OrGateBlock(int tx, int ty):BasicBlock(tx, ty){
+
+}
+
+void OrGateBlock::updateState(){
+    if(oldUpActive || oldDownActive){
+        activeState = 1;
+        activeRight();
+    }
+}
+
+void OrGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldActiveState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
+    painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
+    if(oldActiveState){
+        painter->setPen(QPen(QColor(0, 255, 255)));
+    }
+    else{
+        painter->setPen(QPen(QColor(255-139, 255, 255)));
+    }
+    QFont font;
+    font.setFamily("Microsoft YaHei");
+    font.setPointSize(BLOCK_SIZE/6);
+    font.setBold(true);
+    painter->setFont(font);
+    painter->drawText(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "OR");
+}
+
+NotGateBlock::NotGateBlock():BasicBlock(){
+
+}
+
+NotGateBlock::NotGateBlock(int tx, int ty):BasicBlock(tx, ty){
+
+}
+
+void NotGateBlock::updateState(){
+    if(!oldLeftActive){
+        activeState = 1;
+        activeRight();
+    }
+}
+
+void NotGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldActiveState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x, y+BLOCK_SIZE/4, BLOCK_SIZE, BLOCK_SIZE/2);
+    if(oldActiveState){
+        painter->setPen(QPen(QColor(0, 255, 255)));
+    }
+    else{
+        painter->setPen(QPen(QColor(255-139, 255, 255)));
+    }
+    QFont font;
+    font.setFamily("Microsoft YaHei");
+    font.setPointSize(BLOCK_SIZE/6);
+    font.setBold(true);
+    painter->setFont(font);
+    painter->drawText(x, y+BLOCK_SIZE/4, BLOCK_SIZE, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "NOT");
+}
+
+XorGateBlock::XorGateBlock():BasicBlock(){
+
+}
+
+XorGateBlock::XorGateBlock(int tx, int ty):BasicBlock(tx, ty){
+
+}
+
+void XorGateBlock::updateState(){
+    if(oldUpActive != oldDownActive){
+        activeState = 1;
+        activeRight();
+    }
+}
+
+void XorGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldActiveState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
+    painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
+    if(oldActiveState){
+        painter->setPen(QPen(QColor(0, 255, 255)));
+    }
+    else{
+        painter->setPen(QPen(QColor(255-139, 255, 255)));
+    }
+    QFont font;
+    font.setFamily("Microsoft YaHei");
+    font.setPointSize(BLOCK_SIZE/6);
+    font.setBold(true);
+    painter->setFont(font);
+    painter->drawText(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "XOR");
+}

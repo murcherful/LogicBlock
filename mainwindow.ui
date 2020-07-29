@@ -243,28 +243,35 @@
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton_8">
+            <widget class="QRadioButton" name="radioButtonSwitch">
+             <property name="text">
+              <string>Switch</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButtonAndGate">
              <property name="text">
               <string>And Gate</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton_9">
+            <widget class="QRadioButton" name="radioButtonOrGate">
              <property name="text">
               <string>Or Gate</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton_10">
+            <widget class="QRadioButton" name="radioButtonNotGate">
              <property name="text">
               <string>Not Gate</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="radioButton_11">
+            <widget class="QRadioButton" name="radioButtonXorGate">
              <property name="text">
               <string>Xor Gate</string>
              </property>
