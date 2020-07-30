@@ -1,16 +1,28 @@
 #include "mygraphicsview.h"
 
+int MyGraphicsView::STATE_EDIT = 0;
+int MyGraphicsView::STATE_MOVE = 1;
+int MyGraphicsView::STATE_SELECT = 2;
+
+int MyGraphicsView::SELECT_STATE_SET_POINT = 0;
+int MyGraphicsView::SELECT_STATE_PASTE = 1;
+int MyGraphicsView::SELECT_STATE_MOVE = 2;
+
 MyGraphicsView::MyGraphicsView(QWidget* parent):QGraphicsView(parent){
     zoomScale = 1;
     centerX = 0;
     centerY = 0;
-    isEdit = false;
+    graphicsState = STATE_MOVE;
+    selectState = SELECT_STATE_SET_POINT;
     isLeftMouseMoving = false;
     this->setCursor(Qt::SizeAllCursor);
     blockUpdateTimer = new QTimer(this);
     connect(blockUpdateTimer, SIGNAL(timeout()), this, SLOT(blockUpdate()));
     blockType = BasicBlock::POWER;
     lightSet = new MyHashSet;
+    selectPoint1IsValid = false;
+    selectPoint2IsValid = false;
+    isSelectMove = false;
 }
 
 void MyGraphicsView::keyPressEvent(QKeyEvent *event){
@@ -56,26 +68,56 @@ void MyGraphicsView::wheelEvent(QWheelEvent *event){
 }
 
 void MyGraphicsView::mousePressEvent(QMouseEvent *event){
+    QPointF scenePoint = this->mapToScene(event->pos());
+    int indexX = XYToIndex(scenePoint.x());
+    int indexY = XYToIndex(scenePoint.y());
+    IndexPair index(indexX, indexY);
     if(event->button() == Qt::LeftButton){
-        if(isEdit){
+        if(graphicsState == STATE_EDIT){
             QPointF scenePoint = this->mapToScene(event->pos());
-            addBlock(scenePoint.x(), scenePoint.y());
+            addBlock(scenePoint.x(), scenePoint.y(), blockType);
         }
-        else{
+        else if(graphicsState == STATE_MOVE){
             startPoint = event->pos();
             isLeftMouseMoving = true;
         }
+        else if(graphicsState == STATE_SELECT){
+            if(selectState == SELECT_STATE_SET_POINT){
+                selectPoint1IsValid = true;
+                selectPoint1.first = indexX;
+                selectPoint1.second = indexY;
+                setSelectMaxMinXY();
+            }
+            else if(selectState == SELECT_STATE_PASTE){
+                pasteSelectArea(indexX, indexY);
+            }
+            else if(selectState == SELECT_STATE_MOVE){
+                selectMoveStartPointX = indexX;
+                selectMoveStartPointY = indexY;
+                selectMoveOldPoint1 = selectPoint1;
+                selectMoveOldPoint2 = selectPoint2;
+                selectMoveInfo = getSelectAreaBlockInfo();
+                deleteSelectArea();
+                isSelectMove = true;
+            }
+            myScene->update();
+        }
     }
     else if(event->button() == Qt::RightButton){
-        QPointF scenePoint = this->mapToScene(event->pos());
-        int indexX = transToIndex(scenePoint.x());
-        int indexY = transToIndex(scenePoint.y());
-        IndexPair index(indexX, indexY);
-        if(isEdit){
+        if(graphicsState == STATE_EDIT){
             deleteBlock(index);
         }
-        else{
+        else if(graphicsState == STATE_MOVE){
             interactiveBlock(index);
+        }
+        else if(graphicsState == STATE_SELECT){
+            if(selectState == SELECT_STATE_SET_POINT){
+                selectPoint2IsValid = true;
+                selectPoint2.first = indexX;
+                selectPoint2.second = indexY;
+                setSelectMaxMinXY();
+            }
+            myScene->update();
         }
     }
 }
@@ -87,14 +129,26 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event){
         scene()->setSceneRect(centerX-disPoint.x(), centerY-disPoint.y(), SCENE_WIDTH, SCENE_HEIGHT);
         scene()->update();
     }
+    if(isSelectMove){
+        QPointF scenePoint = this->mapToScene(event->pos());
+        int indexX = XYToIndex(scenePoint.x());
+        int indexY = XYToIndex(scenePoint.y());
+        IndexPair index(indexX, indexY);
+        selectPoint1.first = indexX - selectMoveStartPointX + selectMoveOldPoint1.first;
+        selectPoint1.second = indexY - selectMoveStartPointY + selectMoveOldPoint1.second;
+        selectPoint2.first = indexX - selectMoveStartPointX + selectMoveOldPoint2.first;
+        selectPoint2.second = indexY - selectMoveStartPointY + selectMoveOldPoint2.second;
+        setSelectMaxMinXY();
+        scene()->update();
+    }
 }
 
 void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event){
     if(event->button() == Qt::LeftButton){
-        if(isEdit){
+        if(graphicsState == STATE_EDIT){
 
         }
-        else{
+        else if(graphicsState == STATE_MOVE){
             QPointF disPoint = event->pos() - startPoint;
             disPoint /= zoomScale;
             scene()->setSceneRect(centerX-disPoint.x(), centerY-disPoint.y(), SCENE_WIDTH, SCENE_HEIGHT);
@@ -103,22 +157,49 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event){
             centerY = centerY-disPoint.y();
             isLeftMouseMoving = false;
         }
+        else if(graphicsState == STATE_SELECT){
+            if(selectState == SELECT_STATE_MOVE && isSelectMove){
+                QPointF scenePoint = this->mapToScene(event->pos());
+                int indexX = XYToIndex(scenePoint.x());
+                int indexY = XYToIndex(scenePoint.y());
+                IndexPair index(indexX, indexY);
+                selectPoint1.first = indexX - selectMoveStartPointX + selectMoveOldPoint1.first;
+                selectPoint1.second = indexY - selectMoveStartPointY + selectMoveOldPoint1.second;
+                selectPoint2.first = indexX - selectMoveStartPointX + selectMoveOldPoint2.first;
+                selectPoint2.second = indexY - selectMoveStartPointY + selectMoveOldPoint2.second;
+                setSelectMaxMinXY();
+                isSelectMove = false;
+                pasteAreaByVector(selectMinX, selectMinY, selectMoveInfo);
+                myScene->update();
+            }
+        }
     }
 }
 
-void MyGraphicsView::setIsEdit(bool s){
-    isEdit = s;
-    if(!isEdit){
+void MyGraphicsView::setGraphicsState(int s){
+    graphicsState = s;
+    if(graphicsState == STATE_MOVE){
         this->setCursor(Qt::SizeAllCursor);
     }
     else{
         this->setCursor(Qt::ArrowCursor);
     }
+    if(graphicsState == STATE_SELECT){
+        myScene->isSelect = true;
+    }
+    else{
+        myScene->isSelect = false;
+    }
+    myScene->update();
 }
 
-void MyGraphicsView::addBlock(int x, int y){
-    x = transToGrid(x);
-    y = transToGrid(y);
+void MyGraphicsView::setSelectState(int s){
+    selectState = s;
+}
+
+void MyGraphicsView::addBlock(int x, int y, int type){
+    x = XYToGrid(x);
+    y = XYToGrid(y);
     int indexX = x / BLOCK_SIZE;
     int indexY = y / BLOCK_SIZE;
     IndexPair index(indexX, indexY);
@@ -126,57 +207,57 @@ void MyGraphicsView::addBlock(int x, int y){
     if(it != blockMap.end()){
        return;
     }
-    BasicBlock* bb = getBlock(x, y);
+    BasicBlock* bb = getBlock(x, y, type);
     blockMap.insert(std::pair<IndexPair, BasicBlock*>(index, bb));
     combineBlock(bb);
     this->scene()->addItem(bb);
     this->scene()->update();
 }
 
-BasicBlock* MyGraphicsView::getBlock(int x, int y){
-    if(blockType == BasicBlock::POWER){
+BasicBlock* MyGraphicsView::getBlock(int x, int y, int type){
+    if(type == BasicBlock::POWER){
         return new PowerBlock(x, y);
     }
-    else if(blockType == BasicBlock::STRAIGHT_LINE_H){
-        return new StraightLineBlock(x, y, StraightLineBlock::HORIZONTAL);
+    else if(type == BasicBlock::STRAIGHT_LINE_H){
+        return new StraightLineBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::STRAIGHT_LINE_V){
-        return new StraightLineBlock(x, y, StraightLineBlock::VERTICAL);
+    else if(type == BasicBlock::STRAIGHT_LINE_V){
+        return new StraightLineBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::LEFT_UP_LINE){
-        return new CornerBlock(x, y, CornerBlock::LEFT_UP);
+    else if(type == BasicBlock::LEFT_UP_LINE){
+        return new CornerBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::LEFT_DOWN_LINE){
-        return new CornerBlock(x, y, CornerBlock::LEFT_DOWN);
+    else if(type == BasicBlock::LEFT_DOWN_LINE){
+        return new CornerBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::RIGHT_UP_LINE){
-        return new CornerBlock(x, y, CornerBlock::RIGHT_UP);
+    else if(type == BasicBlock::RIGHT_UP_LINE){
+        return new CornerBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::RIGHT_DOWN_LINE){
-        return new CornerBlock(x, y, CornerBlock::RIGHT_DOWN);
+    else if(type == BasicBlock::RIGHT_DOWN_LINE){
+        return new CornerBlock(x, y, type);
     }
-    else if(blockType == BasicBlock::LIGHT){
+    else if(type == BasicBlock::LIGHT){
         return new LightBlock(x, y, lightSet);
     }
-    else if(blockType == BasicBlock::CROSS_CONNECT){
+    else if(type == BasicBlock::CROSS_CONNECT){
         return new CrossConnectBlock(x, y);
     }
-    else if(blockType == BasicBlock::CROSS_NOT_CONNECT){
+    else if(type == BasicBlock::CROSS_NOT_CONNECT){
         return new CrossNotConnectBlock(x, y);
     }
-    else if(blockType == BasicBlock::SWITCH_BLOCK){
+    else if(type == BasicBlock::SWITCH_BLOCK){
         return new SwitchBlock(x, y);
     }
-    else if(blockType == BasicBlock::AND_GATE_BLOCK){
+    else if(type == BasicBlock::AND_GATE_BLOCK){
         return new AndGateBlock(x, y);
     }
-    else if(blockType == BasicBlock::OR_GATE_BLOCK){
+    else if(type == BasicBlock::OR_GATE_BLOCK){
         return new OrGateBlock(x, y);
     }
-    else if(blockType == BasicBlock::NOT_GATE_BLOCK){
+    else if(type == BasicBlock::NOT_GATE_BLOCK){
         return new NotGateBlock(x, y);
     }
-    else if(blockType == BasicBlock::XOR_GATE_BLOCK){
+    else if(type == BasicBlock::XOR_GATE_BLOCK){
         return new XorGateBlock(x, y);
     }
 }
@@ -220,7 +301,7 @@ void MyGraphicsView::combineBlock(BasicBlock *bb){
     }
 }
 
-int MyGraphicsView::transToGrid(int x){
+int MyGraphicsView::XYToGrid(int x){
     if(x < 0){
         return x / BLOCK_SIZE * BLOCK_SIZE - BLOCK_SIZE;
     }
@@ -229,8 +310,13 @@ int MyGraphicsView::transToGrid(int x){
     }
 }
 
-int MyGraphicsView::transToIndex(int x){
-    return transToGrid(x) / BLOCK_SIZE;
+int MyGraphicsView::XYToIndex(int x){
+    return XYToGrid(x) / BLOCK_SIZE;
+}
+
+int MyGraphicsView::indexToXYCenter(int index){
+    int res = index * BLOCK_SIZE + BLOCK_SIZE/2;
+    return res;
 }
 
 void MyGraphicsView::blockUpdate(){
@@ -293,4 +379,81 @@ void MyGraphicsView::interactiveBlock(IndexPair index){
         it->second->interactive();
     }
     scene()->update();
+}
+
+void MyGraphicsView::setMyScene(MyScene *s){
+    myScene = s;
+    myScene->lightSet = lightSet;
+    myScene->selectPoint1IsValid = &selectPoint1IsValid;
+    myScene->selectPoint2IsValid = &selectPoint2IsValid;
+    myScene->selectPoint1 = &selectPoint1;
+    myScene->selectPoint2 = &selectPoint2;
+    myScene->selectMaxX = &selectMaxX;
+    myScene->selectMaxY = &selectMaxY;
+    myScene->selectMinX = &selectMinX;
+    myScene->selectMinY = &selectMinY;
+}
+
+void MyGraphicsView::setSelectMaxMinXY(){
+    selectMinX = std::min(selectPoint1.first, selectPoint2.first);
+    selectMaxX = std::max(selectPoint1.first, selectPoint2.first)+1;
+    selectMinY = std::min(selectPoint1.second, selectPoint2.second);
+    selectMaxY = std::max(selectPoint1.second, selectPoint2.second)+1;
+}
+
+void MyGraphicsView::deleteSelectArea(){
+    if(!selectPoint1IsValid || !selectPoint2IsValid){
+        return;
+    }
+    IndexPair index;
+    for(int i = selectMinX; i < selectMaxX; ++i){
+        for(int j = selectMinY; j < selectMaxY; ++j){
+            index.first = i;
+            index.second = j;
+            deleteBlock(index);
+        }
+    }
+}
+
+std::vector<BlockInfo> MyGraphicsView::getSelectAreaBlockInfo(){
+    MyHashMap::iterator it;
+    IndexPair index;
+    std::vector<BlockInfo> res;
+    for(int i = selectMinX; i < selectMaxX; ++i){
+        for(int j = selectMinY; j < selectMaxY; ++j){
+            index.first = i;
+            index.second = j;
+            it = blockMap.find(index);
+            if(it != blockMap.end()){
+                BlockInfo bi;
+                bi.first.first = index.first - selectMinX;
+                bi.first.second = index.second - selectMinY;
+                bi.second = it->second->blockType;
+                res.push_back(bi);
+            }
+        }
+    }
+    return res;
+}
+
+void MyGraphicsView::pasteSelectArea(int indexX, int indexY){
+    if(!selectPoint1IsValid || !selectPoint2IsValid){
+        return;
+    }
+    std::vector<BlockInfo> blocks = getSelectAreaBlockInfo();
+    pasteAreaByVector(indexX, indexY, blocks);
+}
+
+void MyGraphicsView::pasteAreaByVector(int indexX, int indexY, std::vector<BlockInfo> blocks){
+    for(int i = 0; i < blocks.size(); ++i){
+        int x = blocks[i].first.first + indexX;
+        int y = blocks[i].first.second + indexY;
+        addBlock(indexToXYCenter(x), indexToXYCenter(y), blocks[i].second);
+    }
+}
+
+void MyGraphicsView::clearSelectPoint(){
+    selectPoint1IsValid = false;
+    selectPoint2IsValid = false;
+    myScene->update();
 }

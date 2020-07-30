@@ -10,6 +10,7 @@
 #define KEY_MOVE_SPEED 5
 
 typedef std::pair<int, int> IndexPair;
+typedef std::pair<IndexPair, int> BlockInfo;
 
 struct pair_hash {
     template <class T1, class T2>

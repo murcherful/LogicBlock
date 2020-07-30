@@ -77,6 +77,19 @@ private slots:
 
     void on_radioButtonXorGate_toggled(bool checked);
 
+    void on_radioButtonSelect_toggled(bool checked);
+
+    void on_radioButtonPaste_toggled(bool checked);
+
+    void on_radioButtonSetPoint_toggled(bool checked);
+
+    void on_pushButtonDelete_clicked();
+
+    void on_radioButtonSelectMove_toggled(bool checked);
+
+
+    void on_pushButtonClearSelect_clicked();
+
 private:
     Ui::MainWindow *ui;
     MyScene *scene1;

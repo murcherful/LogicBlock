@@ -7,6 +7,7 @@ MyScene::MyScene(QWidget *parent):QGraphicsScene(parent)
     isNight = false;
     isRenderLight = false;
     lightSet = NULL;
+    isSelect = false;
 }
 
 void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
@@ -24,6 +25,30 @@ void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
         for(it = lightSet->begin(); it != lightSet->end(); it++){
             painter->drawRect((it->first-4)*BLOCK_SIZE, (it->second-4)*BLOCK_SIZE, BLOCK_SIZE*9, BLOCK_SIZE*9);
         }
+    }
+    if(isSelect && (*selectPoint1IsValid)){
+        QColor color(255, 0, 0);
+        color.setAlphaF(0.25);
+        painter->setBrush(QBrush(color));
+        painter->drawRect(selectPoint1->first*BLOCK_SIZE+BLOCK_SIZE/4, selectPoint1->second*BLOCK_SIZE+BLOCK_SIZE/4, BLOCK_SIZE/2, BLOCK_SIZE/2);
+    }
+    if(isSelect && (*selectPoint2IsValid)){
+        QColor color(255, 0, 0);
+        color.setAlphaF(0.25);
+        painter->setBrush(QBrush(color));
+        painter->drawRect(selectPoint2->first*BLOCK_SIZE+BLOCK_SIZE/4, selectPoint2->second*BLOCK_SIZE+BLOCK_SIZE/4, BLOCK_SIZE/2, BLOCK_SIZE/2);
+    }
+    if(isSelect && (*selectPoint1IsValid) && (*selectPoint2IsValid)){
+        int indexX1 = *selectMinX;
+        int indexX2 = *selectMaxX;
+        int indexY1 = *selectMinY;
+        int indexY2 = *selectMaxY;
+        int w = indexX2 - indexX1;
+        int h = indexY2 - indexY1;
+        QColor color(0, 255, 0);
+        color.setAlphaF(0.5);
+        painter->setBrush(QBrush(color));
+        painter->drawRect(indexX1*BLOCK_SIZE, indexY1*BLOCK_SIZE, w*BLOCK_SIZE, h*BLOCK_SIZE);
     }
 }
 

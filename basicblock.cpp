@@ -121,19 +121,16 @@ void BasicBlock::interactive(){
     return;
 }
 
-int StraightLineBlock::HORIZONTAL = 0;
-int StraightLineBlock::VERTICAL = 1;
-
 StraightLineBlock::StraightLineBlock():BasicBlock(){
-    type = HORIZONTAL;
+    blockType = STRAIGHT_LINE_H;
 }
 
 StraightLineBlock::StraightLineBlock(int tx, int ty, int ttype):BasicBlock(tx, ty){
-    type = ttype;
+    blockType = ttype;
 }
 
 void StraightLineBlock::updateState(){
-    if(type == HORIZONTAL){
+    if(blockType == STRAIGHT_LINE_H){
         if(oldLeftActive){
             activeState = 1;
             activeRight();
@@ -143,7 +140,7 @@ void StraightLineBlock::updateState(){
             activeLeft();
         }
     }
-    else if(type == VERTICAL){
+    else if(blockType == STRAIGHT_LINE_V){
         if(oldUpActive){
             activeState = 1;
             activeDown();
@@ -164,20 +161,20 @@ void StraightLineBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     else{
         painter->setBrush(QBrush(QColor(139, 0, 0)));
     }
-    if(type == HORIZONTAL){
+    if(blockType == STRAIGHT_LINE_H){
         painter->drawRect(x, y+BLOCK_SIZE/4, BLOCK_SIZE, BLOCK_SIZE/2);
     }
-    else if(type == VERTICAL){
+    else if(blockType == STRAIGHT_LINE_V){
         painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
     }
 }
 
 PowerBlock::PowerBlock():BasicBlock(){
-
+    blockType = POWER;
 }
 
 PowerBlock::PowerBlock(int tx, int ty):BasicBlock(tx, ty){
-
+    blockType = POWER;
 }
 
 void PowerBlock::updateState(){
@@ -199,23 +196,18 @@ void PowerBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     painter->drawRect(x+3*BLOCK_SIZE/8, y+3*BLOCK_SIZE/8, BLOCK_SIZE/4, BLOCK_SIZE/4);
 }
 
-int CornerBlock::LEFT_UP = 0;
-int CornerBlock::LEFT_DOWN = 1;
-int CornerBlock::RIGHT_UP = 2;
-int CornerBlock::RIGHT_DOWN = 3;
-
 CornerBlock::CornerBlock():BasicBlock(){
-    type = LEFT_UP;
+    blockType = LEFT_UP_LINE;
     setPoints();
 }
 
 CornerBlock::CornerBlock(int tx, int ty, int ttype):BasicBlock(tx, ty){
-    type = ttype;
+    blockType = ttype;
     setPoints();
 }
 
 void CornerBlock::updateState(){
-    if(type == LEFT_UP){
+    if(blockType == LEFT_UP_LINE){
         if(oldLeftActive){
             activeState = 1;
             activeUp();
@@ -225,7 +217,7 @@ void CornerBlock::updateState(){
             activeLeft();
         }
     }
-    else if(type == LEFT_DOWN){
+    else if(blockType == LEFT_DOWN_LINE){
         if(oldDownActive){
             activeState = 1;
             activeLeft();
@@ -235,7 +227,7 @@ void CornerBlock::updateState(){
             activeDown();
         }
     }
-    else if(type == RIGHT_UP){
+    else if(blockType == RIGHT_UP_LINE){
         if(oldRightActive){
             activeState = 1;
             activeUp();
@@ -245,7 +237,7 @@ void CornerBlock::updateState(){
             activeRight();
         }
     }
-    else if(type == RIGHT_DOWN){
+    else if(blockType == RIGHT_DOWN_LINE){
         if(oldDownActive){
             activeState = 1;
             activeRight();
@@ -270,7 +262,7 @@ void CornerBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 }
 
 void CornerBlock::setPoints(){
-    if(type == LEFT_UP){
+    if(blockType == LEFT_UP_LINE){
         blockPoints[0] = QPointF(x, y+BLOCK_SIZE/4);
         blockPoints[1] = QPointF(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4);
         blockPoints[2] = QPointF(x+BLOCK_SIZE/4, y);
@@ -278,7 +270,7 @@ void CornerBlock::setPoints(){
         blockPoints[4] = QPointF(x+3*BLOCK_SIZE/4, y+3*BLOCK_SIZE/4);
         blockPoints[5] = QPointF(x, y+3*BLOCK_SIZE/4);
     }
-    else if(type == LEFT_DOWN){
+    else if(blockType == LEFT_DOWN_LINE){
         blockPoints[0] = QPointF(x, y+BLOCK_SIZE/4);
         blockPoints[1] = QPointF(x+3*BLOCK_SIZE/4, y+BLOCK_SIZE/4);
         blockPoints[2] = QPointF(x+3*BLOCK_SIZE/4, y+BLOCK_SIZE);
@@ -286,7 +278,7 @@ void CornerBlock::setPoints(){
         blockPoints[4] = QPointF(x+BLOCK_SIZE/4, y+3*BLOCK_SIZE/4);
         blockPoints[5] = QPointF(x, y+3*BLOCK_SIZE/4);
     }
-    else if(type == RIGHT_UP){
+    else if(blockType == RIGHT_UP_LINE){
         blockPoints[0] = QPointF(x+BLOCK_SIZE/4, y);
         blockPoints[1] = QPointF(x+3*BLOCK_SIZE/4, y);
         blockPoints[2] = QPointF(x+3*BLOCK_SIZE/4, y+BLOCK_SIZE/4);
@@ -294,7 +286,7 @@ void CornerBlock::setPoints(){
         blockPoints[4] = QPointF(x+BLOCK_SIZE, y+3*BLOCK_SIZE/4);
         blockPoints[5] = QPointF(x+BLOCK_SIZE/4, y+3*BLOCK_SIZE/4);
     }
-    else if(type == RIGHT_DOWN){
+    else if(blockType == RIGHT_DOWN_LINE){
         blockPoints[0] = QPointF(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4);
         blockPoints[1] = QPointF(x+BLOCK_SIZE, y+BLOCK_SIZE/4);
         blockPoints[2] = QPointF(x+BLOCK_SIZE, y+3*BLOCK_SIZE/4);
@@ -309,12 +301,14 @@ LightBlock::LightBlock():BasicBlock(){
     isOn = false;
     oldIsOn = false;
     lightSet = NULL;
+    blockType = LIGHT;
 }
 
 LightBlock::LightBlock(int tx, int ty, MyHashSet* set):BasicBlock(tx, ty){
     isOn = false;
     oldIsOn = false;
     lightSet = set;
+    blockType = LIGHT;
 }
 
 void LightBlock::updateState(){
@@ -385,10 +379,12 @@ LightBlock::~LightBlock(){
 
 CrossConnectBlock::CrossConnectBlock():BasicBlock(){
     setPoints();
+    blockType = CROSS_CONNECT;
 }
 
 CrossConnectBlock::CrossConnectBlock(int tx, int ty):BasicBlock(tx, ty){
     setPoints();
+    blockType = CROSS_CONNECT;
 }
 
 void CrossConnectBlock::updateState(){
@@ -447,10 +443,12 @@ void CrossConnectBlock::setPoints(){
 
 CrossNotConnectBlock::CrossNotConnectBlock():BasicBlock(){
     initArgs();
+    blockType = CROSS_NOT_CONNECT;
 }
 
 CrossNotConnectBlock::CrossNotConnectBlock(int tx, int ty):BasicBlock(tx, ty){
     initArgs();
+    blockType = CROSS_NOT_CONNECT;
 }
 
 void CrossNotConnectBlock::updateState(){
@@ -513,10 +511,12 @@ void CrossNotConnectBlock::initArgs(){
 
 SwitchBlock::SwitchBlock():BasicBlock(){
     initArgs();
+    blockType = SWITCH_BLOCK;
 }
 
 SwitchBlock::SwitchBlock(int tx, int ty):BasicBlock(tx, ty){
     initArgs();
+    blockType = SWITCH_BLOCK;
 }
 
 void SwitchBlock::initArgs(){
@@ -559,11 +559,11 @@ void SwitchBlock::interactive(){
 }
 
 AndGateBlock::AndGateBlock():BasicBlock(){
-
+    blockType = AND_GATE_BLOCK;
 }
 
 AndGateBlock::AndGateBlock(int tx, int ty):BasicBlock(tx, ty){
-
+    blockType = AND_GATE_BLOCK;
 }
 
 void AndGateBlock::updateState(){
@@ -599,11 +599,11 @@ void AndGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 }
 
 OrGateBlock::OrGateBlock():BasicBlock(){
-
+    blockType = OR_GATE_BLOCK;
 }
 
 OrGateBlock::OrGateBlock(int tx, int ty):BasicBlock(tx, ty){
-
+    blockType = OR_GATE_BLOCK;
 }
 
 void OrGateBlock::updateState(){
@@ -639,11 +639,11 @@ void OrGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 }
 
 NotGateBlock::NotGateBlock():BasicBlock(){
-
+    blockType = NOT_GATE_BLOCK;
 }
 
 NotGateBlock::NotGateBlock(int tx, int ty):BasicBlock(tx, ty){
-
+    blockType = NOT_GATE_BLOCK;
 }
 
 void NotGateBlock::updateState(){
@@ -678,11 +678,11 @@ void NotGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 }
 
 XorGateBlock::XorGateBlock():BasicBlock(){
-
+    blockType = XOR_GATE_BLOCK;
 }
 
 XorGateBlock::XorGateBlock(int tx, int ty):BasicBlock(tx, ty){
-
+    blockType = XOR_GATE_BLOCK;
 }
 
 void XorGateBlock::updateState(){

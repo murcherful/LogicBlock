@@ -15,27 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     scene1 = new MyScene();
     scene1->setSceneRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
     ui->graphicsView->setScene(scene1);
-    scene1->lightSet = ui->graphicsView->lightSet;
+    ui->graphicsView->setMyScene(scene1);
     ui->graphicsView->show();
-    /*
-    QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0,0,BLOCK_SIZE,BLOCK_SIZE));
-    QPen pen;
-    pen.setWidth(3);
-    pen.setColor(QColor(255,0,0));
-    item->setPen(pen);
-    item->setBrush(QColor(0, 255, 0));
-    item->setFlag(QGraphicsItem::ItemIsMovable);
-    item->setPos(BLOCK_SIZE, BLOCK_SIZE);
-    scene1->addItem(item);
-    item = new QGraphicsRectItem(QRectF(0,0,BLOCK_SIZE,BLOCK_SIZE));
-    pen.setWidth(3);
-    pen.setColor(QColor(255,0,0));
-    item->setPen(pen);
-    item->setBrush(QColor(0, 255, 0));
-    item->setFlag(QGraphicsItem::ItemIsMovable);
-    item->setPos(BLOCK_SIZE*10, BLOCK_SIZE*10);
-    scene1->addItem(item);
-    */
     ui->labelState->setText("Stopping");
 }
 
@@ -63,14 +44,14 @@ void MainWindow::on_actionexit_triggered()
 void MainWindow::on_radioButtonEdit_toggled(bool checked)
 {
     if(checked){
-        ui->graphicsView->setIsEdit(true);
+        ui->graphicsView->setGraphicsState(MyGraphicsView::STATE_EDIT);
     }
 }
 
 void MainWindow::on_radioButtonMove_toggled(bool checked)
 {
     if(checked){
-        ui->graphicsView->setIsEdit(false);
+        ui->graphicsView->setGraphicsState(MyGraphicsView::STATE_MOVE);
     }
 }
 
@@ -226,4 +207,42 @@ void MainWindow::on_radioButtonXorGate_toggled(bool checked)
     if(checked){
         ui->graphicsView->setBlockType(BasicBlock::XOR_GATE_BLOCK);
     }
+}
+
+void MainWindow::on_radioButtonSelect_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setGraphicsState(MyGraphicsView::STATE_SELECT);
+    }
+}
+
+void MainWindow::on_radioButtonPaste_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setSelectState(MyGraphicsView::SELECT_STATE_PASTE);
+    }
+}
+
+void MainWindow::on_radioButtonSetPoint_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setSelectState(MyGraphicsView::SELECT_STATE_SET_POINT);
+    }
+}
+
+void MainWindow::on_pushButtonDelete_clicked()
+{
+    ui->graphicsView->deleteSelectArea();
+}
+
+void MainWindow::on_radioButtonSelectMove_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setSelectState(MyGraphicsView::SELECT_STATE_MOVE);
+    }
+}
+
+void MainWindow::on_pushButtonClearSelect_clicked()
+{
+    ui->graphicsView->clearSelectPoint();
 }

@@ -28,6 +28,8 @@ public:
     int indexX;
     int indexY;
 
+    int blockType;
+
     BasicBlock* upBlock;
     BasicBlock* downBlock;
     BasicBlock* leftBlock;
@@ -79,10 +81,6 @@ public:
     void updateState() override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
-    static int HORIZONTAL;
-    static int VERTICAL;
-
-    int type;
 };
 
 class PowerBlock:public BasicBlock
@@ -103,13 +101,6 @@ public:
 
     void updateState() override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
-
-    static int LEFT_UP;
-    static int LEFT_DOWN;
-    static int RIGHT_UP;
-    static int RIGHT_DOWN;
-
-    int type;
 
 private:
     QPointF blockPoints[6];

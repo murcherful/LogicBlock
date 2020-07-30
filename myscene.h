@@ -15,11 +15,21 @@ public:
     void setIsNight(bool s);
     void setIsRenderLight(bool s);
     MyHashSet *lightSet;
+    bool* selectPoint1IsValid;
+    bool* selectPoint2IsValid;
+    IndexPair* selectPoint1;
+    IndexPair* selectPoint2;
+    int* selectMinX;
+    int* selectMaxX;
+    int* selectMinY;
+    int* selectMaxY;
+    bool isSelect;
 
 private:
     bool isDrawGrid;
     bool isNight;
     bool isRenderLight;
+
 
     void drawGrid(QPainter *painter, const QRectF &rect);
 
