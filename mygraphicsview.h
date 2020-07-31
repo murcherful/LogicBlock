@@ -11,6 +11,10 @@
 #include <unordered_map>
 #include <QTimer>
 #include <algorithm>
+#include <QFileDialog>
+#include <fstream>
+#include <QFile>
+#include <QTextStream>
 
 typedef std::unordered_map<IndexPair, BasicBlock*, pair_hash> MyHashMap;
 typedef std::unordered_set<IndexPair, pair_hash> MyHashSet;
@@ -32,7 +36,10 @@ public:
     void pasteSelectArea(int indexX, int indexY);
     void pasteAreaByVector(int indexX, int indexY, std::vector<BlockInfo> blocks);
     std::vector<BlockInfo> getSelectAreaBlockInfo();
+    std::vector<BlockInfo> getAllBlockInfo();
     void clearSelectPoint();
+    void saveSelectArea();
+    void loadFile(int indexX, int indexY);
 
     MyScene* myScene;
 
@@ -42,6 +49,7 @@ public:
     static int SELECT_STATE_SET_POINT;
     static int SELECT_STATE_PASTE;
     static int SELECT_STATE_MOVE;
+    static int SELECT_LOAD_FILE;
 
 protected:
     void keyPressEvent(QKeyEvent* event);
@@ -104,7 +112,6 @@ private:
     int indexToXYCenter(int index);
 
     void setSelectMaxMinXY();
-
 
 };
 

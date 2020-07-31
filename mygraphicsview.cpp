@@ -7,6 +7,7 @@ int MyGraphicsView::STATE_SELECT = 2;
 int MyGraphicsView::SELECT_STATE_SET_POINT = 0;
 int MyGraphicsView::SELECT_STATE_PASTE = 1;
 int MyGraphicsView::SELECT_STATE_MOVE = 2;
+int MyGraphicsView::SELECT_LOAD_FILE = 3;
 
 MyGraphicsView::MyGraphicsView(QWidget* parent):QGraphicsView(parent){
     zoomScale = 1;
@@ -99,6 +100,9 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event){
                 selectMoveInfo = getSelectAreaBlockInfo();
                 deleteSelectArea();
                 isSelectMove = true;
+            }
+            else if(selectState == SELECT_LOAD_FILE){
+                loadFile(indexX, indexY);
             }
             myScene->update();
         }
@@ -436,6 +440,28 @@ std::vector<BlockInfo> MyGraphicsView::getSelectAreaBlockInfo(){
     return res;
 }
 
+std::vector<BlockInfo> MyGraphicsView::getAllBlockInfo(){
+    MyHashMap::iterator it;
+    std::vector<BlockInfo> res;
+    int minX = INT_MAX;
+    int minY = INT_MAX;
+    for(it = blockMap.begin(); it != blockMap.end(); ++it){
+        IndexPair index = it->first;
+        int type = it->second->blockType;
+        minX = std::min(minX, index.first);
+        minY = std::min(minY, index.second);
+        BlockInfo bi;
+        bi.first = index;
+        bi.second = type;
+        res.push_back(bi);
+    }
+    for(int i = 0; i < res.size(); ++i){
+        res[i].first.first -= minX;
+        res[i].first.second -= minY;
+    }
+    return res;
+}
+
 void MyGraphicsView::pasteSelectArea(int indexX, int indexY){
     if(!selectPoint1IsValid || !selectPoint2IsValid){
         return;
@@ -456,4 +482,48 @@ void MyGraphicsView::clearSelectPoint(){
     selectPoint1IsValid = false;
     selectPoint2IsValid = false;
     myScene->update();
+}
+
+void MyGraphicsView::saveSelectArea(){
+    std::vector<BlockInfo> blocks;
+    if(selectPoint1IsValid && selectPoint2IsValid){
+        blocks = getSelectAreaBlockInfo();
+    }
+    else{
+        blocks = getAllBlockInfo();
+    }
+    if(blocks.size() == 0){
+        return;
+    }
+    QString fileName = QFileDialog::getSaveFileName(this, "file", "", "");
+    if(!fileName.isNull()){
+        QFile file(fileName);
+        if(file.open(QIODevice::WriteOnly|QIODevice::Text)){
+            QTextStream fs(&file);
+            fs << blocks.size() << endl;
+            for(int i = 0; i < blocks.size(); ++i){
+                fs << blocks[i].first.first << " " << blocks[i].first.second << " " << blocks[i].second << endl;
+            }
+            file.close();
+        }
+    }
+}
+
+void MyGraphicsView::loadFile(int indexX, int indexY){
+    std::vector<BlockInfo> blocks;
+    QString fileName = QFileDialog::getOpenFileName(this, "file", "", "");
+    if(!fileName.isNull()){
+        QFile file(fileName);
+        if(file.open(QIODevice::ReadOnly|QIODevice::Text)){
+            QTextStream fs(&file);
+            int size;
+            fs >> size;
+            blocks.resize(size);
+            for(int i = 0; i < blocks.size(); ++i){
+                fs >> blocks[i].first.first >> blocks[i].first.second >> blocks[i].second;
+            }
+            file.close();
+        }
+    }
+    pasteAreaByVector(indexX, indexY, blocks);
 }

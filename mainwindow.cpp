@@ -246,3 +246,15 @@ void MainWindow::on_pushButtonClearSelect_clicked()
 {
     ui->graphicsView->clearSelectPoint();
 }
+
+void MainWindow::on_pushButtonSaveFile_clicked()
+{
+    ui->graphicsView->saveSelectArea();
+}
+
+void MainWindow::on_radioButtonLoadFile_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setSelectState(MyGraphicsView::SELECT_LOAD_FILE);
+    }
+}

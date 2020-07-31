@@ -6,6 +6,8 @@
 #include <QWheelEvent>
 #include "myscene.h"
 #include <QMouseEvent>
+#include <QFileDialog>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -89,6 +91,10 @@ private slots:
 
 
     void on_pushButtonClearSelect_clicked();
+
+    void on_pushButtonSaveFile_clicked();
+
+    void on_radioButtonLoadFile_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
