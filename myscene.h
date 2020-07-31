@@ -25,6 +25,8 @@ public:
     int* selectMaxY;
     bool isSelect;
 
+    int lightDis;
+
 private:
     bool isDrawGrid;
     bool isNight;

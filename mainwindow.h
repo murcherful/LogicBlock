@@ -100,6 +100,8 @@ private slots:
 
     void on_radioButtonLatch_toggled(bool checked);
 
+    void on_spinBoxLightDis_valueChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     MyScene *scene1;

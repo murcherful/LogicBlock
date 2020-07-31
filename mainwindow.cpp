@@ -272,3 +272,8 @@ void MainWindow::on_radioButtonLatch_toggled(bool checked)
         ui->graphicsView->setBlockType(BasicBlock::LATCH_BLOCK);
     }
 }
+
+void MainWindow::on_spinBoxLightDis_valueChanged(int arg1)
+{
+    ui->graphicsView->setLightDis(arg1);
+}

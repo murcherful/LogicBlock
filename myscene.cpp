@@ -8,6 +8,7 @@ MyScene::MyScene(QWidget *parent):QGraphicsScene(parent)
     isRenderLight = false;
     lightSet = NULL;
     isSelect = false;
+    lightDis = 4;
 }
 
 void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
@@ -22,8 +23,9 @@ void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
     painter->setBrush(QBrush(color));
     MyHashSet::iterator it;
     if(isRenderLight){
+        int w = 2*lightDis+1;
         for(it = lightSet->begin(); it != lightSet->end(); it++){
-            painter->drawRect((it->first-4)*BLOCK_SIZE, (it->second-4)*BLOCK_SIZE, BLOCK_SIZE*9, BLOCK_SIZE*9);
+            painter->drawRect((it->first-lightDis)*BLOCK_SIZE, (it->second-lightDis)*BLOCK_SIZE, BLOCK_SIZE*w, BLOCK_SIZE*w);
         }
     }
     if(isSelect && (*selectPoint1IsValid)){

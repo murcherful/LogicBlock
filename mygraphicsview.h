@@ -40,6 +40,7 @@ public:
     void clearSelectPoint();
     void saveSelectArea();
     void loadFile(int indexX, int indexY);
+    void setLightDis(int d);
 
     MyScene* myScene;
 

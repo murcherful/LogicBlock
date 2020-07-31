@@ -533,3 +533,8 @@ void MyGraphicsView::loadFile(int indexX, int indexY){
     }
     pasteAreaByVector(indexX, indexY, blocks);
 }
+
+void MyGraphicsView::setLightDis(int d){
+    myScene->lightDis = d;
+    myScene->update();
+}
