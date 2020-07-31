@@ -51,7 +51,7 @@ void MyGraphicsView::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_E){
         graphicsEdit();
     }
-    else if(event->key() == Qt::Key_M){
+    else if(event->key() == Qt::Key_Q){
         graphicsMove();
     }
 }
@@ -263,6 +263,12 @@ BasicBlock* MyGraphicsView::getBlock(int x, int y, int type){
     }
     else if(type == BasicBlock::XOR_GATE_BLOCK){
         return new XorGateBlock(x, y);
+    }
+    else if(type == BasicBlock::WALL_BLOCK){
+        return new WallBlock(x, y);
+    }
+    else if(type == BasicBlock::LATCH_BLOCK){
+        return new LatchBlock(x, y);
     }
 }
 

@@ -258,3 +258,17 @@ void MainWindow::on_radioButtonLoadFile_toggled(bool checked)
         ui->graphicsView->setSelectState(MyGraphicsView::SELECT_LOAD_FILE);
     }
 }
+
+void MainWindow::on_radioButtonWall_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::WALL_BLOCK);
+    }
+}
+
+void MainWindow::on_radioButtonLatch_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::LATCH_BLOCK);
+    }
+}

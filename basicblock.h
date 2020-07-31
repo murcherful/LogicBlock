@@ -61,6 +61,8 @@ public:
     static int OR_GATE_BLOCK;
     static int NOT_GATE_BLOCK;
     static int XOR_GATE_BLOCK;
+    static int WALL_BLOCK;
+    static int LATCH_BLOCK;
 
 protected:
     void activeLeft();
@@ -219,6 +221,33 @@ public:
 
    void updateState() override;
    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+};
+
+class WallBlock:public BasicBlock
+{
+public:
+    WallBlock();
+    WallBlock(int tx, int ty);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+};
+
+class LatchBlock:public BasicBlock
+{
+public:
+    LatchBlock();
+    LatchBlock(int tx, int ty);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void reset() override;
+    void stateSwap() override;
+
+private:
+    int storeState;
+    int oldStoreState;
+    void initArgs();
 };
 
 #endif // BASICBLOCK_H

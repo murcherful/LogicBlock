@@ -15,6 +15,8 @@ int BasicBlock::AND_GATE_BLOCK = 11;
 int BasicBlock::OR_GATE_BLOCK = 12;
 int BasicBlock::NOT_GATE_BLOCK = 13;
 int BasicBlock::XOR_GATE_BLOCK = 14;
+int BasicBlock::WALL_BLOCK = 15;
+int BasicBlock::LATCH_BLOCK = 16;
 
 void BasicBlock::initArgs(){
     x = 0;
@@ -576,20 +578,28 @@ void AndGateBlock::updateState(){
 void AndGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
     painter->setBrush(QBrush(QColor(211, 211, 211)));
     painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldUpActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE/4);
+    if(oldDownActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y+3*BLOCK_SIZE/4, BLOCK_SIZE/2, BLOCK_SIZE/4);
     if(oldActiveState){
         painter->setBrush(QBrush(QColor(255, 0, 0)));
     }
     else{
         painter->setBrush(QBrush(QColor(139, 0, 0)));
     }
-    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
     painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
-    if(oldActiveState){
-        painter->setPen(QPen(QColor(0, 255, 255)));
-    }
-    else{
-        painter->setPen(QPen(QColor(255-139, 255, 255)));
-    }
+    painter->setPen(QPen(QColor(0, 255, 255)));
     QFont font;
     font.setFamily("Microsoft YaHei");
     font.setPointSize(BLOCK_SIZE/6);
@@ -616,20 +626,28 @@ void OrGateBlock::updateState(){
 void OrGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
     painter->setBrush(QBrush(QColor(211, 211, 211)));
     painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldUpActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE/4);
+    if(oldDownActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y+3*BLOCK_SIZE/4, BLOCK_SIZE/2, BLOCK_SIZE/4);
     if(oldActiveState){
         painter->setBrush(QBrush(QColor(255, 0, 0)));
     }
     else{
         painter->setBrush(QBrush(QColor(139, 0, 0)));
     }
-    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
     painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
-    if(oldActiveState){
-        painter->setPen(QPen(QColor(0, 255, 255)));
-    }
-    else{
-        painter->setPen(QPen(QColor(255-139, 255, 255)));
-    }
+    painter->setPen(QPen(QColor(0, 255, 255)));
     QFont font;
     font.setFamily("Microsoft YaHei");
     font.setPointSize(BLOCK_SIZE/6);
@@ -695,24 +713,121 @@ void XorGateBlock::updateState(){
 void XorGateBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
     painter->setBrush(QBrush(QColor(211, 211, 211)));
     painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldUpActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE/4);
+    if(oldDownActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y+3*BLOCK_SIZE/4, BLOCK_SIZE/2, BLOCK_SIZE/4);
     if(oldActiveState){
         painter->setBrush(QBrush(QColor(255, 0, 0)));
     }
     else{
         painter->setBrush(QBrush(QColor(139, 0, 0)));
     }
-    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
     painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
-    if(oldActiveState){
-        painter->setPen(QPen(QColor(0, 255, 255)));
-    }
-    else{
-        painter->setPen(QPen(QColor(255-139, 255, 255)));
-    }
+    painter->setPen(QPen(QColor(0, 255, 255)));
     QFont font;
     font.setFamily("Microsoft YaHei");
     font.setPointSize(BLOCK_SIZE/6);
     font.setBold(true);
     painter->setFont(font);
     painter->drawText(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "XOR");
+}
+
+WallBlock::WallBlock():BasicBlock(){
+    blockType = WALL_BLOCK;
+}
+
+WallBlock::WallBlock(int tx, int ty):BasicBlock(tx, ty){
+    blockType = WALL_BLOCK;
+}
+
+void WallBlock::updateState(){
+    return;
+}
+
+void WallBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(125, 125, 125)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+}
+
+LatchBlock::LatchBlock():BasicBlock(){
+    blockType = LATCH_BLOCK;
+    initArgs();
+}
+
+LatchBlock::LatchBlock(int tx, int ty):BasicBlock(tx, ty){
+    blockType = LATCH_BLOCK;
+    initArgs();
+}
+
+void LatchBlock::updateState(){
+    if(oldUpActive){
+        if(oldLeftActive){
+            storeState = 1;
+        }
+        else{
+            storeState = 0;
+        }
+    }
+    if(oldStoreState){
+        activeRight();
+    }
+}
+
+void LatchBlock::stateSwap(){
+    BasicBlock::stateSwap();
+    oldStoreState = storeState;
+}
+
+void LatchBlock::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldUpActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE/4);
+    if(oldLeftActive){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x, y+BLOCK_SIZE/4, BLOCK_SIZE/4, BLOCK_SIZE/2);
+    if(oldStoreState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    painter->drawRect(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2);
+    painter->setPen(QPen(QColor(0, 255, 255)));
+    QFont font;
+    font.setFamily("Microsoft YaHei");
+    font.setPointSize(BLOCK_SIZE/6);
+    font.setBold(true);
+    painter->setFont(font);
+    painter->drawText(x+BLOCK_SIZE/4, y+BLOCK_SIZE/4, 3*BLOCK_SIZE/4, BLOCK_SIZE/2, Qt::AlignHCenter|Qt::AlignVCenter, "L");
+}
+
+void LatchBlock::reset(){
+    BasicBlock::reset();
+    initArgs();
+}
+
+void LatchBlock::initArgs(){
+    storeState = 0;
+    oldStoreState = 0;
 }

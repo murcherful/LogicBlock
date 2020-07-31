@@ -96,6 +96,10 @@ private slots:
 
     void on_radioButtonLoadFile_toggled(bool checked);
 
+    void on_radioButtonWall_toggled(bool checked);
+
+    void on_radioButtonLatch_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     MyScene *scene1;
