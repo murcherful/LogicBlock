@@ -63,6 +63,10 @@ public:
     static int XOR_GATE_BLOCK;
     static int WALL_BLOCK;
     static int LATCH_BLOCK;
+    static int ONE_WAY_LINE_UP;
+    static int ONE_WAY_LINE_DOWN;
+    static int ONE_WAY_LINE_LEFT;
+    static int ONE_WAY_LINE_RIGHT;
 
 protected:
     void activeLeft();
@@ -121,6 +125,7 @@ public:
     void updateState() override;
     void stateSwap() override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void reset() override;
 
 private:
     bool isOn;
@@ -248,6 +253,20 @@ private:
     int storeState;
     int oldStoreState;
     void initArgs();
+};
+
+class OneWayLine:public BasicBlock
+{
+public:
+    OneWayLine();
+    OneWayLine(int tx, int ty, int type);
+
+    void updateState() override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+
+private:
+    QPointF blockPoints[3];
+    void setPoints();
 };
 
 #endif // BASICBLOCK_H

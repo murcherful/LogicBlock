@@ -23,17 +23,22 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mygraphicsview.cpp \
-    myscene.cpp
+    myscene.cpp \
+    previewwindow.cpp \
+    smallview.cpp
 
 HEADERS += \
     basicblock.h \
     common.h \
     mainwindow.h \
     mygraphicsview.h \
-    myscene.h
+    myscene.h \
+    previewwindow.h \
+    smallview.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    previewwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

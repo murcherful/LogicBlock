@@ -15,6 +15,8 @@
 #include <fstream>
 #include <QFile>
 #include <QTextStream>
+#include <QScrollBar>
+#include "smallview.h"
 
 typedef std::unordered_map<IndexPair, BasicBlock*, pair_hash> MyHashMap;
 typedef std::unordered_set<IndexPair, pair_hash> MyHashSet;
@@ -41,6 +43,9 @@ public:
     void saveSelectArea();
     void loadFile(int indexX, int indexY);
     void setLightDis(int d);
+    void setSceneW(int w);
+    void setSceneH(int h);
+    void connectSmallView(SmallView* sv);
 
     MyScene* myScene;
 
@@ -65,6 +70,8 @@ signals:
 
 private slots:
     void blockUpdate();
+    void onScrollBarReleased();
+    void interactiveWithScenePoint(QPointF);
 
 private:
     double zoomScale;
@@ -101,6 +108,13 @@ private:
     std::vector<BlockInfo> selectMoveInfo;
     bool isSelectMove;
 
+    int addBlockStartX;
+    int addBlockStartY;
+
+    bool isDeleteStart;
+
+    int sceneW;
+    int sceneH;
 
     void addBlock(int x, int y, int type);
     BasicBlock* getBlock(int x, int y, int type);

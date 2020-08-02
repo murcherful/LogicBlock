@@ -11,8 +11,6 @@ int MyGraphicsView::SELECT_LOAD_FILE = 3;
 
 MyGraphicsView::MyGraphicsView(QWidget* parent):QGraphicsView(parent){
     zoomScale = 1;
-    centerX = 0;
-    centerY = 0;
     graphicsState = STATE_MOVE;
     selectState = SELECT_STATE_SET_POINT;
     isLeftMouseMoving = false;
@@ -24,29 +22,32 @@ MyGraphicsView::MyGraphicsView(QWidget* parent):QGraphicsView(parent){
     selectPoint1IsValid = false;
     selectPoint2IsValid = false;
     isSelectMove = false;
+    isDeleteStart = false;
+    sceneW = 100;
+    sceneH = 100;
+    centerX = sceneW*BLOCK_SIZE/2;
+    centerY = sceneH*BLOCK_SIZE/2;
+    connect(this->horizontalScrollBar(), SIGNAL(sliderReleased()), this, SLOT(onScrollBarReleased()));
+    connect(this->verticalScrollBar(), SIGNAL(sliderReleased()), this, SLOT(onScrollBarReleased()));
 }
 
 void MyGraphicsView::keyPressEvent(QKeyEvent *event){
     int moveStep = KEY_MOVE_SPEED/zoomScale;
     if(event->key() == Qt::Key_A){
         centerX -= moveStep;
-        scene()->setSceneRect(centerX, centerY, SCENE_WIDTH, SCENE_HEIGHT);
-        scene()->update();
+        centerOn(centerX, centerY);
     }
     else if(event->key() == Qt::Key_D){
         centerX += moveStep;
-        scene()->setSceneRect(centerX, centerY, SCENE_WIDTH, SCENE_HEIGHT);
-        scene()->update();
+        centerOn(centerX, centerY);
     }
     else if(event->key() == Qt::Key_W){
         centerY -= moveStep;
-        scene()->setSceneRect(centerX, centerY, SCENE_WIDTH, SCENE_HEIGHT);
-        scene()->update();
+        centerOn(centerX, centerY);
     }
     else if(event->key() == Qt::Key_S){
         centerY += moveStep;
-        scene()->setSceneRect(centerX, centerY, SCENE_WIDTH, SCENE_HEIGHT);
-        scene()->update();
+        centerOn(centerX, centerY);
     }
     if(event->key() == Qt::Key_E){
         graphicsEdit();
@@ -64,8 +65,9 @@ void MyGraphicsView::wheelEvent(QWheelEvent *event){
     if(zoomScale * factor > 0.05 && zoomScale * factor < 4){
         zoomScale *= factor;
         scale(factor, factor);
+        centerOn(centerX, centerY);
     }
-    QWidget::wheelEvent(event);
+    //QWidget::wheelEvent(event);
 }
 
 void MyGraphicsView::mousePressEvent(QMouseEvent *event){
@@ -77,6 +79,8 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event){
         if(graphicsState == STATE_EDIT){
             QPointF scenePoint = this->mapToScene(event->pos());
             addBlock(scenePoint.x(), scenePoint.y(), blockType);
+            addBlockStartX = indexX;
+            addBlockStartY = indexY;
         }
         else if(graphicsState == STATE_MOVE){
             startPoint = event->pos();
@@ -110,6 +114,7 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event){
     else if(event->button() == Qt::RightButton){
         if(graphicsState == STATE_EDIT){
             deleteBlock(index);
+            isDeleteStart = true;
         }
         else if(graphicsState == STATE_MOVE){
             interactiveBlock(index);
@@ -130,8 +135,7 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event){
     if(isLeftMouseMoving){
         QPointF disPoint = event->pos() - startPoint;
         disPoint /= zoomScale;
-        scene()->setSceneRect(centerX-disPoint.x(), centerY-disPoint.y(), SCENE_WIDTH, SCENE_HEIGHT);
-        scene()->update();
+        this->centerOn(centerX-disPoint.x(), centerY-disPoint.y());
     }
     if(isSelectMove){
         QPointF scenePoint = this->mapToScene(event->pos());
@@ -145,28 +149,49 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event){
         setSelectMaxMinXY();
         scene()->update();
     }
+    if(isDeleteStart){
+        QPointF scenePoint = this->mapToScene(event->pos());
+        int indexX = XYToIndex(scenePoint.x());
+        int indexY = XYToIndex(scenePoint.y());
+        IndexPair index(indexX, indexY);
+        deleteBlock(index);
+    }
 }
 
 void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event){
     if(event->button() == Qt::LeftButton){
+        QPointF scenePoint = this->mapToScene(event->pos());
+        int indexX = XYToIndex(scenePoint.x());
+        int indexY = XYToIndex(scenePoint.y());
+        IndexPair index(indexX, indexY);
         if(graphicsState == STATE_EDIT){
-
+            int minX = std::min(indexX, addBlockStartX);
+            int minY = std::min(indexY, addBlockStartY);
+            int maxX = std::max(indexX, addBlockStartX)+1;
+            int maxY = std::max(indexY, addBlockStartY)+1;
+            int disX = maxX - minX;
+            int disY = maxY - minY;
+            if(disX >= disY){
+                for(int i = minX; i < maxX; ++i){
+                    addBlock(indexToXYCenter(i), indexToXYCenter(addBlockStartY), blockType);
+                }
+            }
+            else{
+                for(int i = minY; i < maxY; ++i){
+                    addBlock(indexToXYCenter(addBlockStartX), indexToXYCenter(i), blockType);
+                }
+            }
         }
         else if(graphicsState == STATE_MOVE){
             QPointF disPoint = event->pos() - startPoint;
             disPoint /= zoomScale;
-            scene()->setSceneRect(centerX-disPoint.x(), centerY-disPoint.y(), SCENE_WIDTH, SCENE_HEIGHT);
-            scene()->update();
+            this->centerOn(centerX-disPoint.x(), centerY-disPoint.y());
             centerX = centerX-disPoint.x();
             centerY = centerY-disPoint.y();
             isLeftMouseMoving = false;
         }
         else if(graphicsState == STATE_SELECT){
             if(selectState == SELECT_STATE_MOVE && isSelectMove){
-                QPointF scenePoint = this->mapToScene(event->pos());
-                int indexX = XYToIndex(scenePoint.x());
-                int indexY = XYToIndex(scenePoint.y());
-                IndexPair index(indexX, indexY);
                 selectPoint1.first = indexX - selectMoveStartPointX + selectMoveOldPoint1.first;
                 selectPoint1.second = indexY - selectMoveStartPointY + selectMoveOldPoint1.second;
                 selectPoint2.first = indexX - selectMoveStartPointX + selectMoveOldPoint2.first;
@@ -176,6 +201,11 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event){
                 pasteAreaByVector(selectMinX, selectMinY, selectMoveInfo);
                 myScene->update();
             }
+        }
+    }
+    else if(event->button() == Qt::RightButton){
+        if(graphicsState == STATE_EDIT){
+            isDeleteStart = false;
         }
     }
 }
@@ -217,6 +247,7 @@ void MyGraphicsView::addBlock(int x, int y, int type){
     this->scene()->addItem(bb);
     this->scene()->update();
 }
+
 
 BasicBlock* MyGraphicsView::getBlock(int x, int y, int type){
     if(type == BasicBlock::POWER){
@@ -269,6 +300,12 @@ BasicBlock* MyGraphicsView::getBlock(int x, int y, int type){
     }
     else if(type == BasicBlock::LATCH_BLOCK){
         return new LatchBlock(x, y);
+    }
+    else if(type == BasicBlock::ONE_WAY_LINE_UP ||
+            type == BasicBlock::ONE_WAY_LINE_DOWN ||
+            type == BasicBlock::ONE_WAY_LINE_LEFT ||
+            type == BasicBlock::ONE_WAY_LINE_RIGHT){
+        return new OneWayLine(x, y, type);
     }
 }
 
@@ -393,6 +430,8 @@ void MyGraphicsView::interactiveBlock(IndexPair index){
 
 void MyGraphicsView::setMyScene(MyScene *s){
     myScene = s;
+    myScene->setSceneRect(0, 0, sceneW*BLOCK_SIZE, sceneH*BLOCK_SIZE);
+    this->centerOn(centerX, centerY);
     myScene->lightSet = lightSet;
     myScene->selectPoint1IsValid = &selectPoint1IsValid;
     myScene->selectPoint2IsValid = &selectPoint2IsValid;
@@ -537,4 +576,37 @@ void MyGraphicsView::loadFile(int indexX, int indexY){
 void MyGraphicsView::setLightDis(int d){
     myScene->lightDis = d;
     myScene->update();
+}
+
+void MyGraphicsView::setSceneW(int w){
+    sceneW = w;
+    myScene->setSceneRect(0, 0, sceneW*BLOCK_SIZE, sceneH*BLOCK_SIZE);
+    centerOn(centerX, centerY);
+}
+
+void MyGraphicsView::setSceneH(int h){
+    sceneH = h;
+    myScene->setSceneRect(0, 0, sceneW*BLOCK_SIZE, sceneH*BLOCK_SIZE);
+    centerOn(centerX, centerY);
+}
+
+void MyGraphicsView::onScrollBarReleased(){
+    int W = this->width() - this->verticalScrollBar()->width();
+    int H = this->height() - this->horizontalScrollBar()->height();
+    QPoint p(W/2, H/2);
+    QPointF sp = this->mapToScene(p);
+    centerX = sp.x();
+    centerY = sp.y();
+    centerOn(centerX, centerY);
+}
+
+void MyGraphicsView::connectSmallView(SmallView *sv){
+    connect(sv, SIGNAL(interactiveScenePoint(QPointF)), this, SLOT(interactiveWithScenePoint(QPointF)));
+}
+
+void MyGraphicsView::interactiveWithScenePoint(QPointF scenePoint){
+    int indexX = XYToIndex(scenePoint.x());
+    int indexY = XYToIndex(scenePoint.y());
+    IndexPair index(indexX, indexY);
+    interactiveBlock(index);
 }

@@ -17,6 +17,10 @@ int BasicBlock::NOT_GATE_BLOCK = 13;
 int BasicBlock::XOR_GATE_BLOCK = 14;
 int BasicBlock::WALL_BLOCK = 15;
 int BasicBlock::LATCH_BLOCK = 16;
+int BasicBlock::ONE_WAY_LINE_UP = 17;
+int BasicBlock::ONE_WAY_LINE_DOWN = 18;
+int BasicBlock::ONE_WAY_LINE_LEFT = 19;
+int BasicBlock::ONE_WAY_LINE_RIGHT = 20;
 
 void BasicBlock::initArgs(){
     x = 0;
@@ -373,6 +377,11 @@ void LightBlock::lightOff(){
     if(it != lightSet->end()){
         lightSet->erase(it);
     }
+}
+
+void LightBlock::reset(){
+    BasicBlock::reset();
+    lightOff();
 }
 
 LightBlock::~LightBlock(){
@@ -830,4 +839,82 @@ void LatchBlock::reset(){
 void LatchBlock::initArgs(){
     storeState = 0;
     oldStoreState = 0;
+}
+
+OneWayLine::OneWayLine():BasicBlock(){
+    blockType = ONE_WAY_LINE_UP;
+    setPoints();
+}
+
+OneWayLine::OneWayLine(int tx, int ty, int type):BasicBlock(tx, ty){
+    blockType = type;
+    setPoints();
+}
+
+void OneWayLine::updateState(){
+    if(blockType == ONE_WAY_LINE_UP){
+        if(oldDownActive){
+            activeState = 1;
+            activeUp();
+        }
+    }
+    else if(blockType == ONE_WAY_LINE_DOWN){
+        if(oldUpActive){
+            activeState = 1;
+            activeDown();
+        }
+    }
+    else if(blockType == ONE_WAY_LINE_LEFT){
+        if(oldRightActive){
+            activeState = 1;
+            activeLeft();
+        }
+    }
+    else if(blockType == ONE_WAY_LINE_RIGHT){
+        if(oldLeftActive){
+            activeState = 1;
+            activeRight();
+        }
+    }
+}
+
+void OneWayLine::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget){
+    painter->setBrush(QBrush(QColor(211, 211, 211)));
+    painter->drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    if(oldActiveState){
+        painter->setBrush(QBrush(QColor(255, 0, 0)));
+    }
+    else{
+        painter->setBrush(QBrush(QColor(139, 0, 0)));
+    }
+    if(blockType == ONE_WAY_LINE_UP || blockType == ONE_WAY_LINE_DOWN){
+        painter->drawRect(x+BLOCK_SIZE/4, y, BLOCK_SIZE/2, BLOCK_SIZE);
+    }
+    else{
+        painter->drawRect(x, y+BLOCK_SIZE/4, BLOCK_SIZE, BLOCK_SIZE/2);
+    }
+    painter->drawPolygon(blockPoints, 3);
+}
+
+void OneWayLine::setPoints(){
+    if(blockType == ONE_WAY_LINE_UP){
+        blockPoints[0] = QPointF(x, y+3*BLOCK_SIZE/4);
+        blockPoints[1] = QPointF(x+BLOCK_SIZE/2, y);
+        blockPoints[2] = QPointF(x+BLOCK_SIZE, y+3*BLOCK_SIZE/4);
+    }
+    else if(blockType == ONE_WAY_LINE_DOWN){
+        blockPoints[0] = QPointF(x, y+BLOCK_SIZE/4);
+        blockPoints[1] = QPointF(x+BLOCK_SIZE/2, y+BLOCK_SIZE);
+        blockPoints[2] = QPointF(x+BLOCK_SIZE, y+BLOCK_SIZE/4);
+    }
+    else if(blockType == ONE_WAY_LINE_LEFT){
+        blockPoints[0] = QPointF(x, y+BLOCK_SIZE/2);
+        blockPoints[1] = QPointF(x+3*BLOCK_SIZE/4, y);
+        blockPoints[2] = QPointF(x+3*BLOCK_SIZE/4, y+BLOCK_SIZE);
+    }
+    else if(blockType == ONE_WAY_LINE_RIGHT){
+        blockPoints[0] = QPointF(x+BLOCK_SIZE/4, y);
+        blockPoints[1] = QPointF(x+BLOCK_SIZE, y+BLOCK_SIZE/2);
+        blockPoints[2] = QPointF(x+BLOCK_SIZE/4, y+BLOCK_SIZE);
+    }
 }

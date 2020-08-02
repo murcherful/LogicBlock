@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QFileDialog>
 #include <QDebug>
+#include "previewwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -101,6 +102,20 @@ private slots:
     void on_radioButtonLatch_toggled(bool checked);
 
     void on_spinBoxLightDis_valueChanged(int arg1);
+
+    void on_radioButtonOneWayUp_toggled(bool checked);
+
+    void on_radioButtonOneWayDown_toggled(bool checked);
+
+    void on_radioButtonOneWayLeft_toggled(bool checked);
+
+    void on_radioButtonOneWayRight_toggled(bool checked);
+
+    void on_pushButtonShowPreview_clicked();
+
+    void on_spinBoxSceneW_valueChanged(int arg1);
+
+    void on_spinBoxSceneH_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

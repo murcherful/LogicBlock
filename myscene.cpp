@@ -16,13 +16,13 @@ void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
         QColor colorBack(0, 0, 0);
         colorBack.setAlphaF(0.5);
         painter->setBrush(QBrush(colorBack));
-        painter->drawRect(rect);
+        painter->drawRect(this->sceneRect());
     }
-    QColor color(255, 255, 0);
-    color.setAlphaF(0.75);
-    painter->setBrush(QBrush(color));
-    MyHashSet::iterator it;
     if(isRenderLight){
+        QColor color(255, 255, 0);
+        color.setAlphaF(0.75);
+        painter->setBrush(QBrush(color));
+        MyHashSet::iterator it;
         int w = 2*lightDis+1;
         for(it = lightSet->begin(); it != lightSet->end(); it++){
             painter->drawRect((it->first-lightDis)*BLOCK_SIZE, (it->second-lightDis)*BLOCK_SIZE, BLOCK_SIZE*w, BLOCK_SIZE*w);
@@ -56,11 +56,18 @@ void MyScene::drawForeground(QPainter *painter, const QRectF &rect){
 
 void MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     if(isDrawGrid){
-        drawGrid(painter, rect);
+        drawGrid(painter, this->sceneRect());
     }
+    painter->setPen(QPen(QColor(255, 0, 0)));
+    QRectF r = this->sceneRect();
+    painter->drawLine(r.left(), r.top(), r.left(), r.bottom());
+    painter->drawLine(r.right(), r.top(), r.right(), r.bottom());
+    painter->drawLine(r.left(), r.top(), r.right(), r.top());
+    painter->drawLine(r.left(), r.bottom(), r.right(), r.bottom());
 }
 
 void MyScene::drawGrid(QPainter *painter, const QRectF &rect){
+    painter->setPen(QPen(QColor(0, 0, 0)));
     int centerX = rect.center().x();
     int centerY = rect.center().y();
     for(int i = 0; i < rect.right(); i += BLOCK_SIZE){

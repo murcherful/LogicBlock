@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->graphicsView, &MyGraphicsView::graphicsEdit, this, &MainWindow::setRadioButtonEdit);
     connect(ui->graphicsView, &MyGraphicsView::graphicsMove, this, &MainWindow::setRadioButtonMove);
     scene1 = new MyScene();
-    scene1->setSceneRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
+    //scene1->setSceneRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
     ui->graphicsView->setScene(scene1);
     ui->graphicsView->setMyScene(scene1);
     ui->graphicsView->show();
@@ -276,4 +276,49 @@ void MainWindow::on_radioButtonLatch_toggled(bool checked)
 void MainWindow::on_spinBoxLightDis_valueChanged(int arg1)
 {
     ui->graphicsView->setLightDis(arg1);
+}
+
+void MainWindow::on_radioButtonOneWayUp_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::ONE_WAY_LINE_UP);
+    }
+}
+
+void MainWindow::on_radioButtonOneWayDown_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::ONE_WAY_LINE_DOWN);
+    }
+}
+
+void MainWindow::on_radioButtonOneWayLeft_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::ONE_WAY_LINE_LEFT);
+    }
+}
+
+void MainWindow::on_radioButtonOneWayRight_toggled(bool checked)
+{
+    if(checked){
+        ui->graphicsView->setBlockType(BasicBlock::ONE_WAY_LINE_RIGHT);
+    }
+}
+
+void MainWindow::on_pushButtonShowPreview_clicked()
+{
+    PreviewWindow* pw = new PreviewWindow;
+    pw->setScene(ui->graphicsView);
+    pw->show();
+}
+
+void MainWindow::on_spinBoxSceneW_valueChanged(int arg1)
+{
+    ui->graphicsView->setSceneW(arg1);
+}
+
+void MainWindow::on_spinBoxSceneH_valueChanged(int arg1)
+{
+    ui->graphicsView->setSceneH(arg1);
 }
